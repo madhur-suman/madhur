@@ -1,45 +1,45 @@
-from kirana_qa_pipeline import kirana_qa_pipeline
+import logging
+from db_chain import db_chain
+
+logger = logging.getLogger(__name__)
 
 class AIQueryProcessor:
     """
-    Unified AI Query Processor
-    - Used by WhatsApp bot (multi-language)
-    - Used by Streamlit app (direct queries)
+    AIQueryProcessor using Gemini via DBChain.
+    Handles natural language queries and converts them to SQL.
     """
 
     def __init__(self):
-        pass
+        # Initialization (no Hugging Face / BharatGPT)
+        logger.info("AIQueryProcessor initialized with Gemini backend")
 
     def process_query(self, query: str, language: str = 'en', phone_number: str = None) -> str:
         """
-        Process query using kirana_qa_pipeline.
-        - Translates non-English queries to English (if required)
-        - Passes query to kirana_qa_pipeline for execution
+        Process a query using DBChain (Gemini).
         """
-
-        # Simple placeholder for language handling
-        # (Later, integrate translation API like Google Translate if needed)
-        if language == 'hi':
-            # Assume kirana_qa_pipeline expects English; just tag response
-            query = f"[Hindi Query] {query}"
-
         try:
-            response = kirana_qa_pipeline(query)
-            return response
+            logger.info(f"Processing query with Gemini: {query}")
+            return db_chain.run(query, phone_number=phone_number)
         except Exception as e:
-            return f"❌ Error processing query: {e}"
+            logger.error(f"AI processing failed: {e}")
+            return f"I encountered an error while processing your query: {e}"
 
-    def get_sample_questions(self, language='en'):
-        """Return sample questions based on language"""
-        if language == 'hi':
-            return [
-                "पिछले हफ्ते सबसे ज्यादा बिकने वाली चीजें कौन सी थीं?",
-                "इस महीने का कुल मुनाफा कितना है?",
-                "कौन सी चीजें 3 दिनों में एक्सपायर हो रही हैं?"
-            ]
-        else:
-            return [
-                "Which item sold the most last week?",
-                "What is the total profit for this month?",
-                "Which items will expire in the next 3 days?"
-            ]
+    def get_sample_questions(self, language: str = 'en'):
+        """
+        Provide sample queries to help users.
+        """
+        samples_en = [
+            "Which item sold the most last week?",
+            "Total profit for this month?",
+            "Which items will expire in 3 days?",
+            "Top 5 selling items?",
+            "Profit from milk sales?"
+        ]
+        samples_hi = [
+            "पिछले हफ्ते सबसे ज्यादा क्या बिका?",
+            "इस महीने का कुल मुनाफा कितना है?",
+            "अगले 3 दिनों में कौन सी चीजें एक्सपायर होंगी?",
+            "टॉप 5 बिकने वाली चीजें कौन सी हैं?",
+            "दूध की बिक्री से कितना मुनाफा हुआ?"
+        ]
+        return samples_hi if language == 'hi' else samples_en
